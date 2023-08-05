@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Ant Colony Optimization Visualization</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/css/bootstrap-slider.min.css">
+    </head>
+<body>
+    <div class="container-fluid">
+        <h1>Fuzzy-based Ant Colony Optimization Visualization</h1>
+        <form method="post">
+            <label for="population_size">Population Size:</label>
+            <input type="number" name="population_size" value="{{ population_size }}">
+            <br>
+            <label for="max_iterations">Max Iterations:</label>
+            <input type="number" name="max_iterations" value="{{ max_iterations }}">
+            <br>
+            <label for="initial_pheromone">Initial Pheromone:</label>
+            <input type="number" step="0.01" name="initial_pheromone" value="{{ initial_pheromone }}">
+            <br>
+            <label for="pheromone_exp_weights">Pheromone Exponential Weights:</label>
+            <input type="number" step="0.01" name="pheromone_exp_weights" value="{{ pheromone_exp_weights }}">
+            <br>
+            <label for="pheromone_evaporation_rate">Pheromone Evaporation Rate:</label>
+            <input type="number" step="0.01" name="pheromone_evaporation_rate" value="{{ pheromone_evaporation_rate }}">
+            <br>
+            <label for="num_nodes">Number of nodes:</label>
+            <input type="number" step="1" name="num_nodes" value="{{ num_nodes }}">
+            <br>
+            <label for="num_nodes">Fuzziness:</label>
+            <input type="number" step="1" name="fuzziness" value="{{ fuzziness }}">
+            <br>
+            <input type="submit" value="Run ACO">
+        </form>
+        <br>
+        <canvas id="myChart" width="400" height="400"></canvas>
+    </div>
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var pathData = {{ best_path|safe }};
+        var distance = {{ best_distance }};
+
+        var labels = [];
+        var data = [];
+
+        pathData.forEach((edge) => {
+            // labels.push(`Node ${edge[0]} to Node ${edge[1]}`);
+            labels.push(`Node ${edge[0]+1} to Node ${edge[1]+1}`);
+            data.push(1);
+        });
+
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Best Path',
+                    data: data,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Best Distance: ${distance}`
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

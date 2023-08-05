@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ant Colony Optimization Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/css/bootstrap-slider.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">Ant Colony Optimization Visualization</h1>
+        <form method="post">
+            <div class="form-group">
+                <label for="population_size">Population Size:</label>
+                <input type="number" class="form-control" name="population_size" value="{{ population_size }}">
+            </div>
+            <div class="form-group">
+                <label for="max_iterations">Max Iterations:</label>
+                <input type="number" class="form-control" name="max_iterations" value="{{ max_iterations }}">
+            </div>
+            <div class="form-group">
+                <label for="initial_pheromone">Initial Pheromone:</label>
+                <input type="number" step="0.01" class="form-control" name="initial_pheromone" value="{{ initial_pheromone }}">
+            </div>
+            <div class="form-group">
+                <label for="pheromone_exp_weights">Pheromone Exponential Weights:</label>
+                <input type="number" step="0.01" class="form-control" name="pheromone_exp_weights" value="{{ pheromone_exp_weights }}">
+            </div>
+            <div class="form-group">
+                <label for="pheromone_evaporation_rate">Pheromone Evaporation Rate:</label>
+                <input type="number" step="0.01" class="form-control" name="pheromone_evaporation_rate" value="{{ pheromone_evaporation_rate }}">
+            </div>
+            <div class="form-group">
+                <label for="num_nodes">Number of nodes:</label>
+                <input type="number" step="1" class="form-control" name="num_nodes" value="{{ num_nodes }}">
+            </div>            
+            <button type="submit" class="btn btn-primary">Run ACO</button>
+        </form>
+        <br>
+        <canvas id="myChart" width="400" height="400"></canvas>
+    </div>
+
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = null;
+
+        // Function to update the chart with new data
+        function updateChart(labels, data, distance) {
+            if (myChart) {
+                myChart.destroy(); // Destroy the existing chart if it exists
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Best Path',
+                        data: data,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Best Distance: ${distance}`
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to update the chart when the form is submitted
+        function updateChartWithData() {
+            var request = new XMLHttpRequest();
+            request.open('POST', '/', true);
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+            request.onload = function() {
+                if (request.status >= 200 && request.status < 400) {
+                    var response = JSON.parse(request.responseText);
+                    var pathData = response['best_path'];
+                    var distance = response['best_distance'];
+                    var labels = [];
+                    var data = [];
+                    pathData.forEach((edge) => {
+                        labels.push(`Node ${edge[0]} to Node ${edge[1]}`);
+                        data.push(1);
+                    });
+                    updateChart(labels, data, distance);
+                }
+            };
+            request.onerror = function() {
+                console.error('An error occurred while updating the chart.');
+            };
+            var formData = new FormData(document.querySelector('form'));
+            request.send(new URLSearchParams(formData));
+        }
+
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            updateChartWithData();
+        });
+
+    </script>
+</body>
+</html>
